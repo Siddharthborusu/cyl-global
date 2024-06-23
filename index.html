@@ -26,19 +26,37 @@
             font-weight: bold;
             color: #333;
         }
+        #error {
+            color: red;
+            font-size: 0.9em;
+        }
     </style>
 </head>
 <body>
     <div class="widget">
-        <p></p>
         <div id="days"></div>
+        <div id="error"></div>
     </div>
 
     <script>
-        // Replace this with your actual birth date
-        const birthDate = new Date('2003-01-09T00:00:00+05:30');
+        function getDateFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('dob');
+        }
 
         function updateDays() {
+            const dobString = getDateFromURL();
+            if (!dobString) {
+                document.getElementById('error').textContent = 'Please provide a date of birth in the URL (e.g., ?dob=1990-01-01)';
+                return;
+            }
+
+            const birthDate = new Date(dobString + 'T00:00:00+05:30');
+            if (isNaN(birthDate.getTime())) {
+                document.getElementById('error').textContent = 'Invalid date format. Use YYYY-MM-DD.';
+                return;
+            }
+
             const now = new Date();
             const indiaTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
             const timeDiff = indiaTime - birthDate;
