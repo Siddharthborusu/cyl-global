@@ -14,7 +14,7 @@
             align-items: center;
             height: 100vh;
             margin: 0;
-            background-color: #f0f0f0;
+            background-color: transparent;
         }
         .widget {
             background-color: white;
@@ -24,6 +24,11 @@
             text-align: center;
             max-width: 300px;
             width: 100%;
+        }
+        .embed-mode {
+            background-color: transparent;
+            box-shadow: none;
+            padding: 0;
         }
         input, button {
             width: 100%;
@@ -42,12 +47,8 @@
         button:hover {
             background-color: #45a049;
         }
-        #result {
-            margin-top: 20px;
-            font-size: 1.2em;
-        }
         #days {
-            font-size: 2em;
+            font-size: 3em;
             font-weight: bold;
             color: #333;
         }
@@ -61,22 +62,38 @@
     </style>
 </head>
 <body>
-    <div class="widget">
-        <h2>Days Since Birth Calculator</h2>
-        <input type="text" id="dob" placeholder="Select your date of birth">
-        <button onclick="calculateDays()">Calculate</button>
+    <div id="widgetContainer" class="widget">
+        <div id="inputInterface">
+            <h2>Days Since Birth Calculator</h2>
+            <input type="text" id="dob" placeholder="Select your date of birth">
+            <button onclick="calculateDays()">Calculate</button>
+            <div id="embedCode"></div>
+        </div>
         <div id="result"></div>
-        <div id="embedCode"></div>
     </div>
 
     <script>
-        flatpickr("#dob", {
-            dateFormat: "Y-m-d",
-            maxDate: "today"
-        });
+        const urlParams = new URLSearchParams(window.location.search);
+        const isEmbedMode = urlParams.get('embed') === 'true';
+        const dobParam = urlParams.get('dob');
 
-        function calculateDays() {
-            const dobString = document.getElementById('dob').value;
+        if (isEmbedMode) {
+            document.getElementById('inputInterface').style.display = 'none';
+            document.getElementById('widgetContainer').classList.add('embed-mode');
+            if (dobParam) calculateDays(dobParam);
+        } else {
+            flatpickr("#dob", {
+                dateFormat: "Y-m-d",
+                maxDate: "today"
+            });
+            if (dobParam) {
+                document.getElementById('dob').value = dobParam;
+                calculateDays();
+            }
+        }
+
+        function calculateDays(dobString) {
+            dobString = dobString || document.getElementById('dob').value;
             
             if (!dobString) {
                 alert("Please select your date of birth.");
@@ -90,31 +107,37 @@
             const daysSinceBirth = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
 
             const resultDiv = document.getElementById('result');
-            resultDiv.innerHTML = `
-                <p>You've been alive for:</p>
-                <div id="days">${daysSinceBirth} days</div>
-            `;
+            resultDiv.innerHTML = `<div id="days">${daysSinceBirth}</div>`;
 
-            const embedCode = document.getElementById('embedCode');
-            const currentUrl = new URL(window.location.href);
-            currentUrl.searchParams.set('dob', dobString);
-            embedCode.innerHTML = `
-                <p>Embed this widget in Notion:</p>
-                <code>${currentUrl.toString()}</code>
-            `;
-            embedCode.style.display = 'block';
-        }
-
-        // Check if URL parameters exist and pre-fill the form
-        window.onload = function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const dob = urlParams.get('dob');
-            
-            if (dob) {
-                document.getElementById('dob').value = dob;
-                calculateDays();
+            if (!isEmbedMode) {
+                const embedCode = document.getElementById('embedCode');
+                const currentUrl = new URL(window.location.href);
+                currentUrl.searchParams.set('dob', dobString);
+                currentUrl.searchParams.set('embed', 'true');
+                embedCode.innerHTML = `
+                    <p>Embed this widget in Notion:</p>
+                    <code>${currentUrl.toString()}</code>
+                `;
+                embedCode.style.display = 'block';
             }
         }
+
+        // Update the count every day at midnight Indian Standard Time
+        function scheduleUpdate() {
+            const now = new Date();
+            const indiaTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+            const tomorrow = new Date(indiaTime);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            tomorrow.setHours(0, 0, 0, 0);
+            const timeUntilMidnight = tomorrow - indiaTime;
+
+            setTimeout(() => {
+                calculateDays(dobParam);
+                scheduleUpdate();
+            }, timeUntilMidnight);
+        }
+
+        if (isEmbedMode) scheduleUpdate();
     </script>
 </body>
 </html>
