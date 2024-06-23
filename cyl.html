@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Days Since Birth</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .widget {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        #days {
+            font-size: 2em;
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="widget">
+        <p></p>
+        <div id="days"></div>
+    </div>
+
+    <script>
+        // Replace this with your actual birth date
+        const birthDate = new Date('2003-01-09T00:00:00+05:30');
+
+        function updateDays() {
+            const now = new Date();
+            const indiaTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+            const timeDiff = indiaTime - birthDate;
+            const daysSinceBirth = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+            document.getElementById('days').textContent = daysSinceBirth;
+        }
+
+        updateDays();
+        setInterval(updateDays, 86400000); // Update every 24 hours
+    </script>
+</body>
+</html>
