@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Days Since Birth</title>
+    <title>Days Since Birth Widget</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -20,52 +22,99 @@
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
             text-align: center;
+            max-width: 300px;
+            width: 100%;
+        }
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 1.2em;
         }
         #days {
             font-size: 2em;
             font-weight: bold;
             color: #333;
         }
-        #error {
-            color: red;
-            font-size: 0.9em;
+        #embedCode {
+            display: none;
+            margin-top: 20px;
+            text-align: left;
+            font-size: 0.8em;
+            word-break: break-all;
         }
     </style>
 </head>
 <body>
     <div class="widget">
-        <div id="days"></div>
-        <div id="error"></div>
+        <h2>Days Since Birth Calculator</h2>
+        <input type="text" id="dob" placeholder="Select your date of birth">
+        <button onclick="calculateDays()">Calculate</button>
+        <div id="result"></div>
+        <div id="embedCode"></div>
     </div>
 
     <script>
-        function getDateFromURL() {
-            const params = new URLSearchParams(window.location.search);
-            return params.get('dob');
-        }
+        flatpickr("#dob", {
+            dateFormat: "Y-m-d",
+            maxDate: "today"
+        });
 
-        function updateDays() {
-            const dobString = getDateFromURL();
+        function calculateDays() {
+            const dobString = document.getElementById('dob').value;
+            
             if (!dobString) {
-                document.getElementById('error').textContent = 'Please provide a date of birth in the URL (e.g., ?dob=1990-01-01)';
+                alert("Please select your date of birth.");
                 return;
             }
 
             const birthDate = new Date(dobString + 'T00:00:00+05:30');
-            if (isNaN(birthDate.getTime())) {
-                document.getElementById('error').textContent = 'Invalid date format. Use YYYY-MM-DD.';
-                return;
-            }
-
             const now = new Date();
             const indiaTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
             const timeDiff = indiaTime - birthDate;
             const daysSinceBirth = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-            document.getElementById('days').textContent = daysSinceBirth;
+
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `
+                <p>You've been alive for:</p>
+                <div id="days">${daysSinceBirth} days</div>
+            `;
+
+            const embedCode = document.getElementById('embedCode');
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('dob', dobString);
+            embedCode.innerHTML = `
+                <p>Embed this widget in Notion:</p>
+                <code>${currentUrl.toString()}</code>
+            `;
+            embedCode.style.display = 'block';
         }
 
-        updateDays();
-        setInterval(updateDays, 86400000); // Update every 24 hours
+        // Check if URL parameters exist and pre-fill the form
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const dob = urlParams.get('dob');
+            
+            if (dob) {
+                document.getElementById('dob').value = dob;
+                calculateDays();
+            }
+        }
     </script>
 </body>
 </html>
