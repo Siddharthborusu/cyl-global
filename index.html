@@ -3,18 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Days Since Birth Widget</title>
+    <title>Count your life Widget</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Courier Prime', monospace;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
-            background-color: transparent;
+            background-color: #1e1e1e;
+            padding: 10px;
+            box-sizing: border-box;
+            overflow: hidden;
         }
         .widget {
             background-color: white;
@@ -22,8 +26,10 @@
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
             text-align: center;
-            max-width: 300px;
             width: 100%;
+            max-width: 400px;
+            position: relative;
+            z-index: 1;
         }
         .embed-mode {
             background-color: transparent;
@@ -37,15 +43,17 @@
             border: 1px solid #ddd;
             border-radius: 4px;
             box-sizing: border-box;
+            font-family: 'Courier Prime', monospace;
         }
         button {
-            background-color: #4CAF50;
+            background-color: #333;
             color: white;
             border: none;
             cursor: pointer;
+            transition: background-color 0.3s;
         }
         button:hover {
-            background-color: #45a049;
+            background-color: #555;
         }
         #days {
             font-size: 3em;
@@ -55,27 +63,109 @@
         #embedCode {
             display: none;
             margin-top: 20px;
-            text-align: left;
-            font-size: 0.8em;
+            text-align: center;
+            font-size: 0.9em;
             word-break: break-all;
+        }
+        .copy-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #e0e0e0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-decoration: none;
+            color: #333;
+            font-size: 1em;
+            margin-top: 15px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .copy-button:hover {
+            background-color: #c0c0c0;
+        }
+        .copy-effect {
+            animation: copy-flash 0.5s;
+        }
+        @keyframes copy-flash {
+            0% { background-color: #f0f0f0; }
+            50% { background-color: #b3ffb3; }
+            100% { background-color: #f0f0f0; }
+        }
+        .typewriter-text {
+            font-size: 1.1em;
+            line-height: 1.4;
+            margin-bottom: 15px;
+            color: #1e1e1e;
+        }
+        #copyFeedback {
+            display: none;
+            color: #3c33ed;
+            margin-top: 5px;
+        }
+        .space {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            overflow: hidden;
+            z-index: 0;
+        }
+        .space .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.5;
+            animation: twinkle 2s infinite;
+        }
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
         }
     </style>
 </head>
 <body>
+    <div class="space" id="space"></div>
     <div id="widgetContainer" class="widget">
         <div id="inputInterface">
-            <h2>Days Since Birth Calculator</h2>
+            <h2>Count your life widget</h2>
             <input type="text" id="dob" placeholder="Select your date of birth">
             <button onclick="calculateDays()">Calculate</button>
             <div id="embedCode"></div>
+            <div id="copyFeedback">Link copied!</div>
         </div>
         <div id="result"></div>
+        <div class="substack-post-embed">
+            <div class="typewriter-text">
+                <p>counting on life by Siddharth</p>
+                <p>An unconventional and a rebellious way of looking at life</p>
+            </div>
+            <a data-post-link href="https://sdrt.substack.com/p/counting-on-life" target="_blank">Read on Substack</a>
+        </div>
     </div>
 
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const isEmbedMode = urlParams.get('embed') === 'true';
         const dobParam = urlParams.get('dob');
+
+        function createStar() {
+            const space = document.getElementById('space');
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.width = `${Math.random() * 3}px`;
+            star.style.height = star.style.width;
+            star.style.top = `${Math.random() * 100}%`;
+            star.style.left = `${Math.random() * 100}%`;
+            star.style.animationDuration = `${Math.random() * 2 + 1}s`;
+            space.appendChild(star);
+        }
+
+        function initStars(count) {
+            for (let i = 0; i < count; i++) {
+                createStar();
+            }
+        }
 
         if (isEmbedMode) {
             document.getElementById('inputInterface').style.display = 'none';
@@ -84,12 +174,28 @@
         } else {
             flatpickr("#dob", {
                 dateFormat: "Y-m-d",
-                maxDate: "today"
+                maxDate: "today",
+                disableMobile: "true"
             });
             if (dobParam) {
                 document.getElementById('dob').value = dobParam;
                 calculateDays();
             }
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                const copyButton = document.querySelector('.copy-button');
+                const copyFeedback = document.getElementById('copyFeedback');
+                copyButton.classList.add('copy-effect');
+                copyFeedback.style.display = 'block';
+                setTimeout(() => {
+                    copyButton.classList.remove('copy-effect');
+                    copyFeedback.style.display = 'none';
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
         }
 
         function calculateDays(dobString) {
@@ -114,15 +220,16 @@
                 const currentUrl = new URL(window.location.href);
                 currentUrl.searchParams.set('dob', dobString);
                 currentUrl.searchParams.set('embed', 'true');
+                const embedUrl = currentUrl.toString();
                 embedCode.innerHTML = `
-                    <p>Embed this widget in Notion:</p>
-                    <code>${currentUrl.toString()}</code>
+                    <button class="copy-button" onclick="copyToClipboard('${embedUrl}')">
+                        Copy embed link
+                    </button>
                 `;
                 embedCode.style.display = 'block';
             }
         }
 
-        // Update the count every day at midnight Indian Standard Time
         function scheduleUpdate() {
             const now = new Date();
             const indiaTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
@@ -138,6 +245,7 @@
         }
 
         if (isEmbedMode) scheduleUpdate();
+        initStars(200); // Initialize 200 stars
     </script>
 </body>
 </html>
