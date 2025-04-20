@@ -188,15 +188,8 @@
                 const urlParams = new URLSearchParams(window.location.search);
                 const embedParam = urlParams.get('embed');
                 const dobParam = urlParams.get('dob');
-                const daysParam = urlParams.get('days');
                 
-                if (embedParam === 'true' && daysParam) {
-                    // If we have the days parameter directly, use it for embed mode
-                    setIsEmbedMode(true);
-                    setDays(parseInt(daysParam, 10));
-                    setDisplayDays(parseInt(daysParam, 10));
-                    return; // Skip the rest of initialization for embed mode
-                } else if (embedParam === 'true' && dobParam) {
+                if (embedParam === 'true' && dobParam) {
                     // If we have DOB, calculate days for embed mode
                     setIsEmbedMode(true);
                     setDob(dobParam);
@@ -263,14 +256,17 @@
                 try {
                     const [year, month, day] = dobString.split('-').map(Number);
                     const birthDate = new Date(Date.UTC(year, month - 1, day, 0, 0, 0));
-                    const now = new Date(Date.UTC(2025, 3, 20, 0, 0, 0)); // April 20, 2025
+                    
+                    // Use the current date instead of a hardcoded date
+                    const now = new Date();
+                    const today = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0));
 
                     console.log('Parsed DOB:', dobString);
                     console.log('Birth Date (UTC):', birthDate.toISOString());
-                    console.log('Current Date (UTC):', now.toISOString());
+                    console.log('Current Date (UTC):', today.toISOString());
 
                     // Calculate days including the current day
-                    const timeDiff = now - birthDate;
+                    const timeDiff = today - birthDate;
                     const daysSinceBirth = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
 
                     console.log('Time Difference (ms):', timeDiff);
@@ -319,8 +315,8 @@
             };
 
             const copyEmbedLink = () => {
-                // Create a URL that will only display the days count when embedded
-                const embedUrl = `${window.location.origin}${window.location.pathname}?days=${days}&embed=true`;
+                // Create a URL with DOB parameter so it calculates days dynamically
+                const embedUrl = `${window.location.origin}${window.location.pathname}?dob=${dob}&embed=true`;
                 navigator.clipboard.writeText(embedUrl).then(() => {
                     setCopied(true);
                     setTimeout(() => setCopied(false), 2000);
