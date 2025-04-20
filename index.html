@@ -160,6 +160,18 @@
             );
         };
 
+        // Simple component to show just the days count for embed mode
+        const DaysOnlyEmbed = ({ daysLived }) => {
+            return (
+                <div className="flex justify-center items-center min-h-screen bg-gray-900">
+                    <div className="text-center">
+                        <p className="text-5xl md:text-7xl font-bold text-white">{daysLived}</p>
+                        <p className="text-xl text-gray-300 mt-2">Days Lived</p>
+                    </div>   
+                </div>
+            );
+        };
+
         const App = () => {
             const [dob, setDob] = useState(localStorage.getItem('dob') || '');
             const [days, setDays] = useState(null);
@@ -167,10 +179,32 @@
             const [error, setError] = useState('');
             const [copied, setCopied] = useState(false);
             const [showGlobe, setShowGlobe] = useState(false);
+            const [isEmbedMode, setIsEmbedMode] = useState(false);
             const flatpickrRef = useRef(null);
 
             useEffect(() => {
                 console.log('App mounted');
+                // Check if this is an embed view
+                const urlParams = new URLSearchParams(window.location.search);
+                const embedParam = urlParams.get('embed');
+                const dobParam = urlParams.get('dob');
+                const daysParam = urlParams.get('days');
+                
+                if (embedParam === 'true' && daysParam) {
+                    // If we have the days parameter directly, use it for embed mode
+                    setIsEmbedMode(true);
+                    setDays(parseInt(daysParam, 10));
+                    setDisplayDays(parseInt(daysParam, 10));
+                    return; // Skip the rest of initialization for embed mode
+                } else if (embedParam === 'true' && dobParam) {
+                    // If we have DOB, calculate days for embed mode
+                    setIsEmbedMode(true);
+                    setDob(dobParam);
+                    calculateDaysFromDOB(dobParam, true);
+                    return; // Skip the rest of initialization for embed mode
+                }
+
+                // Normal mode initialization
                 if (!window.flatpickr) {
                     console.error('Flatpickr not loaded');
                     setError('Failed to load date picker. Please refresh.');
@@ -188,14 +222,19 @@
                         localStorage.setItem('dob', dateStr);
                     }
                 });
-                const urlParams = new URLSearchParams(window.location.search);
-                const dobParam = urlParams.get('dob');
+                
+                // Check for DOB in URL params for normal mode
                 if (dobParam) {
                     console.log('URL Param DOB:', dobParam);
                     setDob(dobParam);
                     calculateDays(dobParam);
                 }
-                return () => flatpickrRef.current.destroy();
+                
+                return () => {
+                    if (flatpickrRef.current) {
+                        flatpickrRef.current.destroy();
+                    }
+                };
             }, []);
 
             useEffect(() => {
@@ -220,7 +259,7 @@
                 setShowGlobe(true);
             };
 
-            const finalizeCalculation = (dobString) => {
+            const calculateDaysFromDOB = (dobString, skipAnimation = false) => {
                 try {
                     const [year, month, day] = dobString.split('-').map(Number);
                     const birthDate = new Date(Date.UTC(year, month - 1, day, 0, 0, 0));
@@ -238,13 +277,21 @@
                     console.log('Calculated Days:', daysSinceBirth);
 
                     setDays(daysSinceBirth);
-                    setDisplayDays(0);
+                    if (skipAnimation) {
+                        setDisplayDays(daysSinceBirth);
+                    } else {
+                        setDisplayDays(0);
+                    }
                     setShowGlobe(false);
                 } catch (e) {
                     console.error('Calculation failed:', e);
                     setError('Invalid date. Please try again.');
                     setShowGlobe(false);
                 }
+            };
+
+            const finalizeCalculation = (dobString) => {
+                calculateDaysFromDOB(dobString);
             };
 
             const generateMilestones = () => {
@@ -272,7 +319,8 @@
             };
 
             const copyEmbedLink = () => {
-                const embedUrl = `${window.location.origin}${window.location.pathname}?dob=${dob}&embed=true`;
+                // Create a URL that will only display the days count when embedded
+                const embedUrl = `${window.location.origin}${window.location.pathname}?days=${days}&embed=true`;
                 navigator.clipboard.writeText(embedUrl).then(() => {
                     setCopied(true);
                     setTimeout(() => setCopied(false), 2000);
@@ -283,6 +331,11 @@
                 const text = `I've lived ${days} days! Find out yours at ${window.location.origin}`;
                 window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
             };
+
+            // If in embed mode with days parameter, show only the days count
+            if (isEmbedMode) {
+                return <DaysOnlyEmbed daysLived={displayDays} />;
+            }
 
             const MotionDiv = motion ? motion.div : 'div';
             const MotionH2 = motion ? motion.h2 : 'h2';
