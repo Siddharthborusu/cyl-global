@@ -3,249 +3,467 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Count your life Widget</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Courier Prime', monospace;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            background-color: #1e1e1e;
-            padding: 10px;
-            box-sizing: border-box;
-            overflow: hidden;
-        }
-        .widget {
-            background-color: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            text-align: center;
-            width: 100%;
-            max-width: 400px;
-            position: relative;
-            z-index: 1;
-        }
-        .embed-mode {
-            background-color: transparent;
-            box-shadow: none;
-            padding: 0;
-        }
-        input, button {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-            font-family: 'Courier Prime', monospace;
-        }
-        button {
-            background-color: #333;
-            color: white;
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        button:hover {
-            background-color: #555;
-        }
-        #days {
-            font-size: 3em;
-            font-weight: bold;
-            color: #333;
-        }
-        #embedCode {
-            display: none;
-            margin-top: 20px;
-            text-align: center;
-            font-size: 0.9em;
-            word-break: break-all;
-        }
-        .copy-button {
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: #e0e0e0;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            text-decoration: none;
-            color: #333;
-            font-size: 1em;
-            margin-top: 15px;
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-        .copy-button:hover {
-            background-color: #c0c0c0;
-        }
-        .copy-effect {
-            animation: copy-flash 0.5s;
-        }
-        @keyframes copy-flash {
-            0% { background-color: #f0f0f0; }
-            50% { background-color: #b3ffb3; }
-            100% { background-color: #f0f0f0; }
-        }
-        .typewriter-text {
-            font-size: 1.1em;
-            line-height: 1.4;
-            margin-bottom: 15px;
-            color: #1e1e1e;
-        }
-        #copyFeedback {
-            display: none;
-            color: #3c33ed;
-            margin-top: 5px;
-        }
-        .space {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            overflow: hidden;
-            z-index: 0;
-        }
-        .space .star {
-            position: absolute;
-            background: white;
-            border-radius: 50%;
-            opacity: 0.5;
-            animation: twinkle 2s infinite;
-        }
-        @keyframes twinkle {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 1; }
-        }
-    </style>
+    <title>Count Your Life Widget</title>
+    <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.22.5/babel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.153.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/framer-motion@10.12.16/dist/framer-motion.umd.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="space" id="space"></div>
-    <div id="widgetContainer" class="widget">
-        <div id="inputInterface">
-            <h2>Count your life widget</h2>
-            <input type="text" id="dob" placeholder="Select your date of birth">
-            <button onclick="calculateDays()">Calculate</button>
-            <div id="embedCode"></div>
-            <div id="copyFeedback">Link copied!</div>
-        </div>
-        <div id="result"></div>
-        <div class="substack-post-embed">
-            <div class="typewriter-text">
-                <p>counting on life by Siddharth</p>
-                <p>An unconventional and a rebellious way of looking at life</p>
-            </div>
-            <a data-post-link href="https://sdrt.substack.com/p/counting-on-life" target="_blank">Read on Substack</a>
-        </div>
-    </div>
+    <div id="root">Loading...</div>
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+        const motion = window.framerMotion ? window.framerMotion.motion : null;
 
-    <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const isEmbedMode = urlParams.get('embed') === 'true';
-        const dobParam = urlParams.get('dob');
+        const Starfield = () => {
+            const canvasRef = useRef(null);
 
-        function createStar() {
-            const space = document.getElementById('space');
-            const star = document.createElement('div');
-            star.className = 'star';
-            star.style.width = `${Math.random() * 3}px`;
-            star.style.height = star.style.width;
-            star.style.top = `${Math.random() * 100}%`;
-            star.style.left = `${Math.random() * 100}%`;
-            star.style.animationDuration = `${Math.random() * 2 + 1}s`;
-            space.appendChild(star);
+            useEffect(() => {
+                if (!canvasRef.current || !window.THREE) return;
+                try {
+                    const scene = new THREE.Scene();
+                    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                    const renderer = new THREE.WebGLRenderer({ canvas: canvasRef.current, alpha: true });
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+
+                    const stars = new THREE.Group();
+                    for (let i = 0; i < 300; i++) {
+                        const geometry = new THREE.SphereGeometry(0.1, 16, 16);
+                        const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                        const star = new THREE.Mesh(geometry, material);
+                        star.position.set(
+                            (Math.random() - 0.5) * 2000,
+                            (Math.random() - 0.5) * 2000,
+                            (Math.random() - 0.5) * 2000
+                        );
+                        stars.add(star);
+                    }
+                    scene.add(stars);
+                    camera.position.z = 5;
+
+                    const animate = () => {
+                        requestAnimationFrame(animate);
+                        stars.rotation.y += 0.0005;
+                        renderer.render(scene, camera);
+                    };
+                    animate();
+
+                    const handleResize = () => {
+                        const width = window.innerWidth;
+                        const height = window.innerHeight;
+                        renderer.setSize(width, height);
+                        camera.aspect = width / height;
+                        camera.updateProjectionMatrix();
+                    };
+                    window.addEventListener('resize', handleResize);
+                    return () => window.removeEventListener('resize', handleResize);
+                } catch (e) {
+                    console.error('Starfield failed:', e);
+                }
+            }, []);
+
+            return <canvas ref={canvasRef} className="fixed top-0 left-0 w-full h-full z-0" />;
+        };
+
+        const GlobeAnimation = ({ onComplete }) => {
+            const canvasRef = useRef(null);
+            const frameCount = useRef(0);
+            const startTime = useRef(0);
+
+            useEffect(() => {
+                if (!canvasRef.current || !window.THREE) {
+                    onComplete();
+                    return;
+                }
+                try {
+                    const scene = new THREE.Scene();
+                    const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+                    const renderer = new THREE.WebGLRenderer({ canvas: canvasRef.current, alpha: true });
+                    renderer.setSize(150, 150);
+
+                    const geometry = new THREE.SphereGeometry(1, 16, 16);
+                    const texture = new THREE.TextureLoader().load(
+                        'https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg',
+                        () => {},
+                        () => {},
+                        () => {
+                            console.error('Texture load failed, using fallback');
+                            texture.image = new Image(1024, 512);
+                            texture.needsUpdate = true;
+                        }
+                    );
+                    const material = new THREE.MeshPhongMaterial({ map: texture });
+                    const globe = new THREE.Mesh(geometry, material);
+                    scene.add(globe);
+
+                    const light = new THREE.PointLight(0xffffff, 1, 100);
+                    light.position.set(5, 5, 5);
+                    scene.add(light);
+                    scene.add(new THREE.AmbientLight(0x404040));
+
+                    camera.position.z = 2.5;
+
+                    const animate = (time) => {
+                        if (!startTime.current) startTime.current = time;
+                        frameCount.current++;
+                        const elapsed = (time - startTime.current) / 1000;
+
+                        console.log('Globe Animation Elapsed:', elapsed);
+
+                        if (elapsed > 2) {
+                            console.log('Globe Animation Complete at:', elapsed);
+                            onComplete();
+                            return;
+                        }
+
+                        if (frameCount.current > 30 && elapsed < 1 && frameCount.current / elapsed < 20) {
+                            console.warn('Low FPS detected, skipping globe animation');
+                            onComplete();
+                            return;
+                        }
+
+                        globe.rotation.y += 0.1;
+                        globe.scale.set(1 + 0.05 * Math.sin(time * 0.005), 1 + 0.05 * Math.sin(time * 0.005), 1 + 0.05 * Math.sin(time * 0.005));
+                        renderer.render(scene, camera);
+                        requestAnimationFrame(animate);
+                    };
+                    requestAnimationFrame(animate);
+
+                    return () => {
+                        renderer.dispose();
+                    };
+                } catch (e) {
+                    console.error('Globe failed:', e);
+                    onComplete();
+                }
+            }, [onComplete]);
+
+            const MotionDiv = motion ? motion.div : 'div';
+            return (
+                <div className="flex justify-center">
+                    <MotionDiv
+                        className="mx-auto"
+                        {...(motion ? {
+                            initial: { scale: 0.8, opacity: 0 },
+                            animate: { scale: 1, opacity: 1 },
+                            transition: { duration: 0.6, ease: "easeInOut" }
+                        } : {})}
+                    >
+                        <canvas ref={canvasRef} className="w-36 h-36" />
+                    </MotionDiv>
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [dob, setDob] = useState(localStorage.getItem('dob') || '');
+            const [days, setDays] = useState(null);
+            const [displayDays, setDisplayDays] = useState(0);
+            const [error, setError] = useState('');
+            const [copied, setCopied] = useState(false);
+            const [showGlobe, setShowGlobe] = useState(false);
+            const flatpickrRef = useRef(null);
+
+            useEffect(() => {
+                console.log('App mounted');
+                if (!window.flatpickr) {
+                    console.error('Flatpickr not loaded');
+                    setError('Failed to load date picker. Please refresh.');
+                    return;
+                }
+                flatpickrRef.current = flatpickr('#dob', {
+                    dateFormat: 'Y-m-d',
+                    maxDate: 'today',
+                    disableMobile: true,
+                    defaultDate: dob || null,
+                    onChange: ([date]) => {
+                        const dateStr = date.toLocaleDateString('en-CA'); // Formats as YYYY-MM-DD in local timezone
+                        console.log('Flatpickr Selected Date:', dateStr);
+                        setDob(dateStr);
+                        localStorage.setItem('dob', dateStr);
+                    }
+                });
+                const urlParams = new URLSearchParams(window.location.search);
+                const dobParam = urlParams.get('dob');
+                if (dobParam) {
+                    console.log('URL Param DOB:', dobParam);
+                    setDob(dobParam);
+                    calculateDays(dobParam);
+                }
+                return () => flatpickrRef.current.destroy();
+            }, []);
+
+            useEffect(() => {
+                if (days && displayDays < days) {
+                    const interval = setInterval(() => {
+                        setDisplayDays(prev => {
+                            const next = prev + Math.ceil(days / 100);
+                            return next >= days ? days : next;
+                        });
+                    }, 20);
+                    return () => clearInterval(interval);
+                }
+            }, [days, displayDays]);
+
+            const calculateDays = (dobString) => {
+                if (!dobString) {
+                    setError('Please select a date of birth.');
+                    setShowGlobe(false);
+                    return;
+                }
+                setError('');
+                setShowGlobe(true);
+            };
+
+            const finalizeCalculation = (dobString) => {
+                try {
+                    const [year, month, day] = dobString.split('-').map(Number);
+                    const birthDate = new Date(Date.UTC(year, month - 1, day, 0, 0, 0));
+                    const now = new Date(Date.UTC(2025, 3, 20, 0, 0, 0)); // April 20, 2025
+
+                    console.log('Parsed DOB:', dobString);
+                    console.log('Birth Date (UTC):', birthDate.toISOString());
+                    console.log('Current Date (UTC):', now.toISOString());
+
+                    // Calculate days including the current day
+                    const timeDiff = now - birthDate;
+                    const daysSinceBirth = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+
+                    console.log('Time Difference (ms):', timeDiff);
+                    console.log('Calculated Days:', daysSinceBirth);
+
+                    setDays(daysSinceBirth);
+                    setDisplayDays(0);
+                    setShowGlobe(false);
+                } catch (e) {
+                    console.error('Calculation failed:', e);
+                    setError('Invalid date. Please try again.');
+                    setShowGlobe(false);
+                }
+            };
+
+            const generateMilestones = () => {
+                if (!days) return [];
+                const milestones = [
+                    { days: 365, label: 'First Year' },
+                    { days: 3650, label: '10th Birthday' },
+                    { days: 6570, label: '18th Birthday' },
+                    { days: 9125, label: '25th Birthday' }
+                ];
+                const MotionLi = motion ? motion.li : 'li';
+                return milestones.filter(m => m.days <= days).map(m => (
+                    <MotionLi
+                        key={m.days}
+                        className="text-sm text-gray-400"
+                        {...(motion ? {
+                            initial: { opacity: 0, x: -10 },
+                            animate: { opacity: 1, x: 0 },
+                            transition: { delay: 0.2, duration: 0.4 }
+                        } : {})}
+                    >
+                        {m.label}: Day {m.days}
+                    </MotionLi>
+                ));
+            };
+
+            const copyEmbedLink = () => {
+                const embedUrl = `${window.location.origin}${window.location.pathname}?dob=${dob}&embed=true`;
+                navigator.clipboard.writeText(embedUrl).then(() => {
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                }).catch(e => console.error('Copy failed:', e));
+            };
+
+            const shareOnX = () => {
+                const text = `I've lived ${days} days! Find out yours at ${window.location.origin}`;
+                window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
+            };
+
+            const MotionDiv = motion ? motion.div : 'div';
+            const MotionH2 = motion ? motion.h2 : 'h2';
+            const MotionInput = motion ? motion.input : 'input';
+            const MotionP = motion ? motion.p : 'p';
+            const MotionButton = motion ? motion.button : 'button';
+            const MotionSpan = motion ? motion.span : 'span';
+
+            return (
+                <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 md:p-8 bg-gradient-to-br from-gray-900 to-gray-800">
+                    <Starfield />
+                    <MotionDiv
+                        className="relative z-10 w-full max-w-[90%] sm:max-w-md md:max-w-lg p-6 sm:p-8 rounded-2xl shadow-xl backdrop-blur-md bg-gray-800/80 text-white animate-fade-in"
+                        {...(motion ? {
+                            initial: { opacity: 0, y: 20 },
+                            animate: { opacity: 1, y: 0 },
+                            transition: { duration: 0.6, ease: "easeInOut" }
+                        } : {})}
+                    >
+                        <div className="mb-6">
+                            <MotionH2
+                                className="text-2xl sm:text-3xl md:text-4xl font-bold text-center"
+                                {...(motion ? {
+                                    initial: { opacity: 0, x: -20 },
+                                    animate: { opacity: 1, x: 0 },
+                                    transition: { duration: 0.4 }
+                                } : {})}
+                            >
+                                Count Your Life
+                            </MotionH2>
+                        </div>
+                        <MotionInput
+                            id="dob"
+                            type="text"
+                            placeholder="Select your date of birth"
+                            value={dob}
+                            onChange={(e) => setDob(e.target.value)}
+                            className={`w-full p-3 mb-4 border rounded-lg bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition animate-fade-in text-sm sm:text-base ${
+                                dob ? 'text-white' : 'text-gray-400'
+                            }`}
+                            aria-label="Date of birth"
+                            {...(motion ? {
+                                initial: { opacity: 0, y: 10 },
+                                animate: { opacity: 1, y: 0 },
+                                transition: { duration: 0.4, delay: 0.1 }
+                            } : {})}
+                        />
+                        {error && (
+                            <MotionP
+                                className="text-red-500 mb-4 text-sm"
+                                {...(motion ? {
+                                    initial: { opacity: 0 },
+                                    animate: { opacity: 1 },
+                                    transition: { duration: 0.3 }
+                                } : {})}
+                            >
+                                {error}
+                            </MotionP>
+                        )}
+                        {showGlobe ? (
+                            <GlobeAnimation onComplete={() => finalizeCalculation(dob)} />
+                        ) : (
+                            days && (
+                                <MotionDiv
+                                    className="text-center mb-6"
+                                    {...(motion ? {
+                                        initial: { opacity: 0, scale: 0.9 },
+                                        animate: { opacity: 1, scale: 1 },
+                                        transition: { duration: 0.5, ease: "easeInOut" }
+                                    } : {})}
+                                >
+                                    <p className="text-3xl sm:text-4xl md:text-5xl font-bold">{displayDays}</p>
+                                    <p className="text-sm text-gray-400">Days lived</p>
+                                    <ul className="mt-4 text-left">{generateMilestones()}</ul>
+                                </MotionDiv>
+                            )
+                        )}
+                        <MotionButton
+                            onClick={() => calculateDays(dob)}
+                            className="w-full p-3 mb-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all hover:shadow-lg animate-fade-in text-sm sm:text-base"
+                            {...(motion ? {
+                                whileHover: { scale: 1.05 },
+                                whileTap: { scale: 0.95 },
+                                initial: { opacity: 0, y: 10 },
+                                animate: { opacity: 1, y: 0 },
+                                transition: { duration: 0.4, delay: 0.2 }
+                            } : {})}
+                        >
+                            Calculate
+                        </MotionButton>
+                        {days && !showGlobe && (
+                            <MotionDiv
+                                className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 mb-6"
+                                {...(motion ? {
+                                    initial: { opacity: 0, y: 10 },
+                                    animate: { opacity: 1, y: 0 },
+                                    transition: { duration: 0.4, delay: 0.3 }
+                                } : {})}
+                            >
+                                <MotionButton
+                                    onClick={copyEmbedLink}
+                                    className="flex-1 p-3 bg-gray-600 rounded-lg hover:bg-gray-500 transition-all relative text-sm sm:text-base"
+                                    {...(motion ? {
+                                        whileHover: { scale: 1.05 },
+                                        whileTap: { scale: 0.95 }
+                                    } : {})}
+                                >
+                                    <span className={copied ? 'opacity-0' : 'opacity-100'}>Copy Embed Link</span>
+                                    {copied && (
+                                        <MotionSpan
+                                            className="absolute inset-0 flex items-center justify-center"
+                                            {...(motion ? {
+                                                initial: { scale: 0 },
+                                                animate: { scale: 1 },
+                                                transition: { duration: 0.3 }
+                                            } : {})}
+                                        >
+                                            ✓ Copied!
+                                        </MotionSpan>
+                                    )}
+                                </MotionButton>
+                                <MotionButton
+                                    onClick={shareOnX}
+                                    className="flex-1 p-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all text-sm sm:text-base"
+                                    {...(motion ? {
+                                        whileHover: { scale: 1.05 },
+                                        whileTap: { scale: 0.95 }
+                                    } : {})}
+                                >
+                                    Share on X
+                                </MotionButton>
+                            </MotionDiv>
+                        )}
+                        <MotionDiv
+                            className="text-center text-sm"
+                            {...(motion ? {
+                                initial: { opacity: 0, y: 10 },
+                                animate: { opacity: 1, y: 0 },
+                                transition: { duration: 0.4, delay: 0.4 }
+                            } : {})}
+                        >
+                            <p>Counting on Life by Siddharth</p>
+                            <p className="text-gray-400">An unconventional way of looking at life</p>
+                            <a
+                                href="https://sdrt.substack.com/p/counting-on-life"
+                                target="_blank"
+                                className="text-blue-500 hover:underline"
+                            >
+                                Read on Substack
+                            </a>
+                        </MotionDiv>
+                    </MotionDiv>
+                </div>
+            );
+        };
+
+        try {
+            ReactDOM.render(<App />, document.getElementById('root'));
+        } catch (e) {
+            console.error('Render failed:', e);
+            document.getElementById('root').innerHTML = '<p>Error loading widget. Please refresh the page.</p>';
         }
-
-        function initStars(count) {
-            for (let i = 0; i < count; i++) {
-                createStar();
-            }
-        }
-
-        if (isEmbedMode) {
-            document.getElementById('inputInterface').style.display = 'none';
-            document.getElementById('widgetContainer').classList.add('embed-mode');
-            if (dobParam) calculateDays(dobParam);
-        } else {
-            flatpickr("#dob", {
-                dateFormat: "Y-m-d",
-                maxDate: "today",
-                disableMobile: "true"
-            });
-            if (dobParam) {
-                document.getElementById('dob').value = dobParam;
-                calculateDays();
-            }
-        }
-
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                const copyButton = document.querySelector('.copy-button');
-                const copyFeedback = document.getElementById('copyFeedback');
-                copyButton.classList.add('copy-effect');
-                copyFeedback.style.display = 'block';
-                setTimeout(() => {
-                    copyButton.classList.remove('copy-effect');
-                    copyFeedback.style.display = 'none';
-                }, 2000);
-            }).catch(err => {
-                console.error('Failed to copy: ', err);
-            });
-        }
-
-        function calculateDays(dobString) {
-            dobString = dobString || document.getElementById('dob').value;
-            
-            if (!dobString) {
-                alert("Please select your date of birth.");
-                return;
-            }
-
-            const birthDate = new Date(dobString + 'T00:00:00+05:30');
-            const now = new Date();
-            const indiaTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
-            const timeDiff = indiaTime - birthDate;
-            const daysSinceBirth = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-
-            const resultDiv = document.getElementById('result');
-            resultDiv.innerHTML = `<div id="days">${daysSinceBirth}</div>`;
-
-            if (!isEmbedMode) {
-                const embedCode = document.getElementById('embedCode');
-                const currentUrl = new URL(window.location.href);
-                currentUrl.searchParams.set('dob', dobString);
-                currentUrl.searchParams.set('embed', 'true');
-                const embedUrl = currentUrl.toString();
-                embedCode.innerHTML = `
-                    <button class="copy-button" onclick="copyToClipboard('${embedUrl}')">
-                        Copy embed link
-                    </button>
-                `;
-                embedCode.style.display = 'block';
-            }
-        }
-
-        function scheduleUpdate() {
-            const now = new Date();
-            const indiaTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
-            const tomorrow = new Date(indiaTime);
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            tomorrow.setHours(0, 0, 0, 0);
-            const timeUntilMidnight = tomorrow - indiaTime;
-
-            setTimeout(() => {
-                calculateDays(dobParam);
-                scheduleUpdate();
-            }, timeUntilMidnight);
-        }
-
-        if (isEmbedMode) scheduleUpdate();
-        initStars(200); // Initialize 200 stars
     </script>
+    <style>
+        body {
+            font-family: 'Space Mono', monospace;
+        }
+        .animate-fade-in {
+            animation: fadeIn 1s ease-in;
+        }
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        /* Override Flatpickr default input background */
+        #dob {
+            background-color: #1F2937 !important; /* Tailwind's gray-800 */
+        }
+        #dob::placeholder {
+            color: #9CA3AF !important; /* Tailwind's gray-400 */
+        }
+    </style>
 </body>
 </html>
